@@ -5,7 +5,7 @@
 Deploy the application and finalize project documentation.
 
 ## Tasks
-- [ ] Deploy the PostgreSQL database (e.g., on Render or Railway).
+- [ ] Deploy the PostgreSQL database (e.g., on Render, Railway, or via Docker).
 - [ ] Deploy the Express backend API.
 - [ ] Deploy the React frontend (e.g., on Vercel).
 - [ ] Ensure environment variables and secrets are properly configured in production.

@@ -1,0 +1,34 @@
+{
+  "name": "paperfind",
+  "version": "1.0.0",
+  "description": "## Description PaperFind is a Semantic Search Engine designed for research papers and documents. It ingests documents (such as arXiv paper abstracts or any text corpus), generates embeddings, and stores them in PostgreSQL with pgvector. It exposes a powerful hybrid search (combining semantic and keyword search) via an Express API, with an intuitive React frontend for users to interact with.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "setup:db": "node scripts/setup_db.js",
+    "ingest": "node scripts/ingest_arxiv.js",
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "backfill": "node scripts/backfill_embeddings.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@huggingface/inference": "^4.13.23",
+    "axios": "^1.18.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^8.2.0",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.22.0",
+    "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

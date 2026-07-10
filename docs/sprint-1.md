@@ -5,7 +5,7 @@
 Establish the core database schema and ingest initial datasets for search functionality.
 
 ## Tasks
-- [ ] Set up PostgreSQL database with the `pgvector` extension.
+- [ ] Set up a Dockerized PostgreSQL database with the `pgvector` extension.
 - [ ] Design and implement the database schema:
   - `documents` table (id, title, content, source_url, created_at)
   - `embeddings` table (document_id, vector) using `vector(1536)` column type.
