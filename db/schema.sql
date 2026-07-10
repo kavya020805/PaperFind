@@ -22,6 +22,13 @@ CREATE TABLE IF NOT EXISTS embeddings (
 -- Index for full-text search (keyword search)
 CREATE INDEX IF NOT EXISTS documents_fts_idx ON documents USING GIN (fts_vector);
 
+-- Analytics table to track search queries
+CREATE TABLE IF NOT EXISTS search_analytics (
+    id SERIAL PRIMARY KEY,
+    query TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Index for approximate nearest-neighbor search (semantic search)
 -- We use HNSW (Hierarchical Navigable Small World) for fast ANN search
 CREATE INDEX IF NOT EXISTS embeddings_vector_idx ON embeddings USING hnsw (embedding vector_cosine_ops);

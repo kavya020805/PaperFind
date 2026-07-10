@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import SearchBar from './components/SearchBar';
 import ResultCard from './components/ResultCard';
@@ -9,22 +9,34 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchContext, setSearchContext] = useState(''); 
+  const [trending, setTrending] = useState([]);
 
-  const handleSearch = async () => {
-    if (!query.trim()) return;
+  useEffect(() => {
+    axios.get('/api/trending')
+      .then(res => setTrending(res.data))
+      .catch(err => console.error("Failed to fetch trending:", err));
+  }, []);
+
+  const handleSearch = async (searchTerm = query) => {
+    if (!searchTerm.trim()) return;
     
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`/api/search?q=${encodeURIComponent(query)}`);
+      const res = await axios.get(`/api/search?q=${encodeURIComponent(searchTerm)}`);
       setResults(res.data.results);
-      setSearchContext(`Results for "${query}"`);
+      setSearchContext(`Results for "${searchTerm}"`);
     } catch (err) {
       console.error(err);
       setError("Failed to fetch search results. Is the backend running?");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTrendingClick = (term) => {
+    setQuery(term);
+    handleSearch(term);
   };
 
   const handleFindRelated = async (id) => {
@@ -50,7 +62,18 @@ function App() {
         <p className="subtitle">AI-Powered Semantic Search for Research</p>
       </header>
 
-      <SearchBar query={query} setQuery={setQuery} onSearch={handleSearch} />
+      <SearchBar query={query} setQuery={setQuery} onSearch={() => handleSearch(query)} />
+      
+      {trending.length > 0 && (
+        <div className="trending-container">
+          <span className="trending-label">Trending:</span>
+          {trending.map((term, i) => (
+            <button key={i} className="trending-pill" onClick={() => handleTrendingClick(term)}>
+              {term}
+            </button>
+          ))}
+        </div>
+      )}
 
       {loading && (
         <div className="center-content">

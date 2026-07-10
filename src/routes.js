@@ -2,6 +2,8 @@ const express = require('express');
 const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
 const { generateEmbedding } = require('./embeddings');
+const redisClient = require('./redis');
+const { analyticsQueue } = require('./queue');
 
 const router = express.Router();
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -84,6 +86,17 @@ router.get('/search', async (req, res) => {
     return res.status(400).json({ error: "Search query 'q' is required." });
   }
 
+  const cacheKey = `search:${q}:page:${page}:limit:${limit}`;
+  try {
+    const cachedData = await redisClient.get(cacheKey);
+    if (cachedData) {
+      analyticsQueue.add('logSearch', { query: q }).catch(err => console.error(err));
+      return res.json(JSON.parse(cachedData));
+    }
+  } catch (err) {
+    console.error('Redis cache error:', err);
+  }
+
   const offset = (page - 1) * limit;
 
   try {
@@ -132,12 +145,21 @@ router.get('/search', async (req, res) => {
     
     // Count total results for semantic (approximation)
     // In production we wouldn't do a full count, but it's fine for our scale
-    
-    res.json({
+    const responseData = {
       query: q,
       page: parseInt(page),
       results: result.rows
-    });
+    };
+    
+    try {
+      await redisClient.setEx(cacheKey, 300, JSON.stringify(responseData));
+    } catch (err) {
+      console.error('Failed to set Redis cache:', err);
+    }
+
+    analyticsQueue.add('logSearch', { query: q }).catch(err => console.error(err));
+
+    res.json(responseData);
 
   } catch (error) {
     console.error(error);
@@ -170,6 +192,34 @@ router.get('/documents/:id/related', async (req, res) => {
 
     const result = await pool.query(searchSQL, [id, limit]);
     res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// GET /trending: Top 5 trending searches
+router.get('/trending', async (req, res) => {
+  try {
+    const cachedTrending = await redisClient.get('trending_searches');
+    if (cachedTrending) {
+      return res.json(JSON.parse(cachedTrending));
+    }
+
+    const trendingSQL = `
+      SELECT query, COUNT(*) as count 
+      FROM search_analytics 
+      WHERE created_at >= NOW() - INTERVAL '24 HOURS'
+      GROUP BY query 
+      ORDER BY count DESC 
+      LIMIT 5;
+    `;
+    const result = await pool.query(trendingSQL);
+    const trendingQueries = result.rows.map(row => row.query);
+    
+    await redisClient.setEx('trending_searches', 300, JSON.stringify(trendingQueries));
+
+    res.json(trendingQueries);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });

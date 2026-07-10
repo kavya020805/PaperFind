@@ -252,3 +252,36 @@ body {
 .result-card:nth-child(3) { animation-delay: 0.3s; }
 .result-card:nth-child(4) { animation-delay: 0.4s; }
 .result-card:nth-child(5) { animation-delay: 0.5s; }
+
+/* Trending */
+.trending-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: -1.5rem;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+}
+.trending-label {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.trending-pill {
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  color: var(--highlight-color);
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.trending-pill:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+}
