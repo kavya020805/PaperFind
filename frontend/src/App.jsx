@@ -11,8 +11,10 @@ function App() {
   const [searchContext, setSearchContext] = useState(''); 
   const [trending, setTrending] = useState([]);
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
   useEffect(() => {
-    axios.get('/api/trending')
+    axios.get(`${API_BASE_URL}/api/trending`)
       .then(res => setTrending(res.data))
       .catch(err => console.error("Failed to fetch trending:", err));
   }, []);
@@ -23,7 +25,7 @@ function App() {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`/api/search?q=${encodeURIComponent(searchTerm)}`);
+      const res = await axios.get(`${API_BASE_URL}/api/search?q=${encodeURIComponent(searchTerm)}`);
       setResults(res.data.results);
       setSearchContext(`Results for "${searchTerm}"`);
     } catch (err) {
@@ -43,7 +45,7 @@ function App() {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`/api/documents/${id}/related`);
+      const res = await axios.get(`${API_BASE_URL}/api/documents/${id}/related`);
       setResults(res.data);
       setSearchContext(`Papers related to document #${id}`);
       window.scrollTo({ top: 0, behavior: 'smooth' });
