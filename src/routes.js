@@ -145,4 +145,35 @@ router.get('/search', async (req, res) => {
   }
 });
 
+// GET /documents/:id/related: Find similar documents
+router.get('/documents/:id/related', async (req, res) => {
+  const { id } = req.params;
+  const limit = parseInt(req.query.limit) || 5;
+
+  try {
+    const searchSQL = `
+      WITH target AS (
+        SELECT embedding FROM embeddings WHERE document_id = $1
+      )
+      SELECT 
+        d.id, 
+        d.title, 
+        substring(d.content from 1 for 200) || '...' as snippet,
+        d.source_url,
+        (1 - (e.embedding <=> (SELECT embedding FROM target))) AS similarity_score
+      FROM documents d
+      JOIN embeddings e ON d.id = e.document_id
+      WHERE d.id != $1
+      ORDER BY e.embedding <=> (SELECT embedding FROM target)
+      LIMIT $2;
+    `;
+
+    const result = await pool.query(searchSQL, [id, limit]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 module.exports = router;
